@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Autobus by bq</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Autobus</h1>
+      <h2 class="project-tagline">An enhanced event bus for Android projects</h2>
+      <a href="https://github.com/bq/autobus" class="btn">View on GitHub</a>
+      <a href="https://github.com/bq/autobus/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/bq/autobus/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h1>
+<a id="-autobus--an-event-bus-by-bq" class="anchor" href="#-autobus--an-event-bus-by-bq" aria-hidden="true"><span class="octicon octicon-link"></span></a> <strong>Autobus</strong> <br># An event bus by <strong>bq</strong>
+</h1>
+
+<p><img src="https://raw.githubusercontent.com/bq/autobus/master/autobus_logo.png" alt="alt text" title="Autobus logo"></p>
+
+<h2>
+<a id="what" class="anchor" href="#what" aria-hidden="true"><span class="octicon octicon-link"></span></a>What?</h2>
+
+<p>An enhanced event bus intended to allow communication between decoupled parts of an application.</p>
+
+<p>It is based on concepts from <a href="http://square.github.com/otto/">Otto</a>, <a href="https://github.com/greenrobot/EventBus">EventBus</a> and <a href="https://github.com/ReactiveX/RxJava">RxJava</a>.</p>
+
+<h2>
+<a id="why" class="anchor" href="#why" aria-hidden="true"><span class="octicon octicon-link"></span></a>Why?</h2>
+
+<p>We developed our own Event Bus to cover two main needs that aren't covered by existing libraries:</p>
+
+<ul>
+<li><strong>Explicit contract between subscribers and emitters</strong></li>
+</ul>
+
+<p>As one of the common use case of Event Buses is the communication between <em>interactors</em> (asynchronous core operations of an app) and <em>presenters</em> (adapters between <em>views</em> and <em>interactors</em>) it is desirable to maintain an explicit definition or contract between the emitters and the subscribers. Autobus accomplishes this task with BusObservable API. A <em>interactor</em> can return a BusObservable instance and subscribers can directly be subscribed to this observable; the observable is the contract itself as it defines the <em>Bus</em>, the <em>Channel</em> and also the data that will be emitted. </p>
+
+<ul>
+<li><strong>Decouple channels and emitted data</strong></li>
+</ul>
+
+<p>Both Otto and EventBus use Events (defined classes) to carry data and also to represent the channel the subscribers
+are listening to. This approach is valid but it is quite inflexible. </p>
+
+<p>Autobus allows representing channels as Strings and
+data as a separate class; this way a subscriber can listen to a channel expecting a concrete class of data (or even Any class
+of data) and emitters can send data of a concrete class (or no data at all) to a concrete channel. When an emitter sends data of
+class D to a channel C, every subscriber listening to channel C and expecting data of class D is notified. Also subscribers
+listening to channel C and expecting data of any class are notified.</p>
+
+<h2>
+<a id="comparison" class="anchor" href="#comparison" aria-hidden="true"><span class="octicon octicon-link"></span></a>Comparison</h2>
+
+<table>
+<thead>
+<tr>
+<th>Functionality</th>
+<th>EventBus</th>
+<th>Otto</th>
+<th>Autobus</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Declare event handling methods</td>
+<td>Name Convention</td>
+<td>Annotations</td>
+<td>Explicity</td>
+</tr>
+<tr>
+<td>Event inheritance</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Cache most recent events</td>
+<td>Yes (sticky)</td>
+<td>No</td>
+<td>Yes (persistent emmit)</td>
+</tr>
+<tr>
+<td>Event producers</td>
+<td>No</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Event delivery in posting thread</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Event delivery in main thread</td>
+<td>Yes</td>
+<td>No</td>
+<td>Yes (using preprocessor)</td>
+</tr>
+<tr>
+<td>Event delivery in bg thread</td>
+<td>Yes</td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Aynchronous event delivery</td>
+<td>Yes</td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+
+<h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<p>You can use Autobus in two different ways:</p>
+
+<ul>
+<li><p><strong>Using Bus API</strong></p></li>
+<li><p>Define data:</p></li>
+</ul>
+
+<div class="highlight highlight-java"><pre><span class="pl-k">public</span> <span class="pl-k">class</span> <span class="pl-en">BusDataSample</span> { <span class="pl-c">/* Additional fields if needed */</span> }</pre></div>
+
+<ul>
+<li>Prepare listeners:</li>
+</ul>
+
+<div class="highlight highlight-java"><pre><span class="pl-k">BusListener&lt;<span class="pl-smi">BusDataSample</span>&gt;</span> listener <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-k">BusListener&lt;&gt;</span>(<span class="pl-smi">BusDataSample</span><span class="pl-k">.</span>class);</pre></div>
+
+<ul>
+<li>Subscribe listener to a bus (should be injected) and a channel, expecting a concrete class:</li>
+</ul>
+
+<div class="highlight highlight-java"><pre>bus<span class="pl-k">.</span>subscribe(<span class="pl-s"><span class="pl-pds">"</span>TEST_CHANNEL<span class="pl-pds">"</span></span>, listener);</pre></div>
+
+<ul>
+<li>Post events with data:</li>
+</ul>
+
+<div class="highlight highlight-java"><pre>bus<span class="pl-k">.</span>emitEvent(<span class="pl-s"><span class="pl-pds">"</span>TEST_CHANNEL<span class="pl-pds">"</span></span>, <span class="pl-k">new</span> <span class="pl-smi">BusDataSample</span>());</pre></div>
+
+<ul>
+<li><p><strong>Using BusObservable API</strong></p></li>
+<li><p>Define data:</p></li>
+</ul>
+
+<div class="highlight highlight-java"><pre><span class="pl-k">public</span> <span class="pl-k">class</span> <span class="pl-en">BusDataSample</span> { <span class="pl-c">/* Additional fields if needed */</span> }</pre></div>
+
+<ul>
+<li>Define BusObservable passing a channel and a bus (should be injected) and specifying the class that will be emitted through it:</li>
+</ul>
+
+<div class="highlight highlight-java"><pre><span class="pl-k">BusObservable&lt;<span class="pl-smi">BusDataSample</span>&gt;</span> busObservable <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-k">BusObservable&lt;&gt;</span>(<span class="pl-s"><span class="pl-pds">"</span>TEST_CHANNEL<span class="pl-pds">"</span></span>, bus);</pre></div>
+
+<ul>
+<li>Prepare listeners:</li>
+</ul>
+
+<div class="highlight highlight-java"><pre><span class="pl-k">BusListener&lt;<span class="pl-smi">BusDataSample</span>&gt;</span> listener <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-k">BusListener&lt;&gt;</span>(<span class="pl-smi">BusDataSample</span><span class="pl-k">.</span>class);</pre></div>
+
+<ul>
+<li>Subscribe listener to the BusObservable:</li>
+</ul>
+
+<div class="highlight highlight-java"><pre>busObservable<span class="pl-k">.</span>subscribe(listener);</pre></div>
+
+<ul>
+<li>Post events with data using BusObservable:</li>
+</ul>
+
+<div class="highlight highlight-java"><pre>busObservable<span class="pl-k">.</span>emitEvent(<span class="pl-k">new</span> <span class="pl-smi">BusDataSample</span>());</pre></div>
+
+<h2>
+<a id="latest-version" class="anchor" href="#latest-version" aria-hidden="true"><span class="octicon octicon-link"></span></a>Latest version</h2>
+
+<p>We are working to make this lib available in a public Maven repository.
+For the moment you can find the latest stable JAR in the root of this GitHub repo as autobus-0.1.0.jar or
+you can build the JAR file yourself from the source code.</p>
+
+<h2>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span class="octicon octicon-link"></span></a>License</h2>
+
+<p>This project is licensed under the Apache Software License, Version 2.0.</p>
+
+<pre><code>Copyright (c) 2015 bq
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+</code></pre>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/bq/autobus">Autobus</a> is maintained by <a href="https://github.com/bq">bq</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
+
