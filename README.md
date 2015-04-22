@@ -47,49 +47,65 @@ Usage
 You can use Autobus in two different ways:
 
 * __Using Bus API__
-    * Define data:
 
-        public class BusDataSample { /* Additional fields if needed */ }
+* Define data:
 
-    * Prepare listeners:
+```java
+public class BusDataSample { /* Additional fields if needed */ }
+```
+  * Prepare listeners:
 
-        BusListener<BusDataSample> listener = new BusListener<>(BusDataSample.class);
+```java
+BusListener<BusDataSample> listener = new BusListener<>(BusDataSample.class);
+```
+  * Subscribe listener to a bus (should be injected) and a channel, expecting a concrete class:
 
-    * Subscribe listener to a bus (should be injected) and a channel, expecting a concrete class:
+```java
+bus.subscribe("TEST_CHANNEL", listener);
+```
 
-        bus.subscribe("TEST_CHANNEL", listener);
+  * Post events with data:
 
-    * Post events with data:
-
-        bus.emitEvent("TEST_CHANNEL", new BusDataSample());
-
-
+```java
+bus.emitEvent("TEST_CHANNEL", new BusDataSample());
+```
 
 * __Using BusObservable API__
-    * Define data:
+  
+* Define data:
 
-        public class BusDataSample { /* Additional fields if needed */ }
+```java
+public class BusDataSample { /* Additional fields if needed */ }
+```
 
-    * Define BusObservable passing a channel and a bus (should be injected) and specifying the class that will be emitted through it:
+  * Define BusObservable passing a channel and a bus (should be injected) and specifying the class that will be emitted through it:
 
-        BusObservable<BusDataSample> busObservable = new BusObservable<>("TEST_CHANNEL", bus);
+```java
+BusObservable<BusDataSample> busObservable = new BusObservable<>("TEST_CHANNEL", bus);
+```
 
-    * Prepare listeners:
+  * Prepare listeners:
 
-        BusListener<BusDataSample> listener = new BusListener<>(BusDataSample.class);
+```java
+BusListener<BusDataSample> listener = new BusListener<>(BusDataSample.class);
+```
 
-    * Subscribe listener to the BusObservable:
+  * Subscribe listener to the BusObservable:
 
-        busObservable.subscribe(listener);
+```java
+busObservable.subscribe(listener);
+```
 
-    * Post events with data using BusObservable:
+  * Post events with data using BusObservable:
 
-        busObservable.emitEvent(new BusDataSample());
+```java
+busObservable.emitEvent(new BusDataSample());
+```
 
 
 Latest version
 --------------
-We are working to make this lib available in a Maven repository.
+We are working to make this lib available in a public Maven repository.
 For the moment you can find the latest stable JAR in the root of this GitHub repo as autobus-0.1.0.jar or
 you can build the JAR file yourself from the source code.
 
