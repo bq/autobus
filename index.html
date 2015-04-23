@@ -29,12 +29,6 @@
 <p>We developed our own Event Bus to cover two main needs that aren't covered by existing libraries:</p>
 
 <ul>
-<li><strong>Explicit contract between subscribers and emitters</strong></li>
-</ul>
-
-<p>As one of the common use case of Event Buses is the communication between <em>interactors</em> (asynchronous core operations of an app) and <em>presenters</em> (adapters between <em>views</em> and <em>interactors</em>) it is desirable to maintain an explicit definition or contract between the emitters and the subscribers. Autobus accomplishes this task with BusObservable API. A <em>interactor</em> can return a BusObservable instance and subscribers can directly be subscribed to this observable; the observable is the contract itself as it defines the <em>Bus</em>, the <em>Channel</em> and also the data that will be emitted. </p>
-
-<ul>
 <li><strong>Decouple channels and emitted data</strong></li>
 </ul>
 
@@ -46,6 +40,21 @@ data as a separate class; this way a subscriber can listen to a channel expectin
 of data) and emitters can send data of a concrete class (or no data at all) to a concrete channel. When an emitter sends data of
 class D to a channel C, every subscriber listening to channel C and expecting data of class D is notified. Also subscribers
 listening to channel C and expecting data of any class are notified.</p>
+
+<ul>
+<li><strong>Explicit contract between subscribers and emitters</strong></li>
+</ul>
+
+<p>As one of the common use case of Event Buses is the communication between <em>interactors</em> (asynchronous core operations of an app) and <em>presenters</em> (adapters between <em>views</em> and <em>interactors</em>) it is desirable to maintain an explicit definition or contract between the emitters and the subscribers. Autobus accomplishes this task with BusObservable API. A <em>interactor</em> can return a BusObservable instance and subscribers can directly be subscribed to this observable; the observable is the contract itself as it defines the <em>Bus</em>, the <em>Channel</em> and also the data that will be emitted. </p>
+
+<h2>
+<a id="ok-what-else" class="anchor" href="#ok-what-else" aria-hidden="true"><span class="octicon octicon-link"></span></a>Ok, what else?</h2>
+
+<ul>
+<li>Full annotated with <a href="https://github.com/Nullable" class="user-mention">@Nullable</a> and <a href="https://github.com/NotNull" class="user-mention">@NotNull</a>.</li>
+<li>Clean code enforcement by strong typing. No need for upcasting/downcasting any object.</li>
+<li>Autocomplete heaven (related to this string typing).</li>
+</ul>
 
 <h2>
 <a id="comparison" class="anchor" href="#comparison" aria-hidden="true"><span class="octicon octicon-link"></span></a>Comparison</h2>
@@ -114,70 +123,484 @@ listening to channel C and expecting data of any class are notified.</p>
 <h2>
 <a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h2>
 
+<p>We are working to make this lib available in a Maven repository.
+For the moment you can find the latest stable JAR in the root of this GitHub repo as autobus-0.1.0.jar or
+you can build the JAR file yourself from the source code.</p>
+
+<h2>
+<a id="quick-start" class="anchor" href="#quick-start" aria-hidden="true"><span class="octicon octicon-link"></span></a>Quick start</h2>
+
 <p>You can use Autobus in two different ways:</p>
 
+<h2>
+<a id="-using-bus-api" class="anchor" href="#-using-bus-api" aria-hidden="true"><span class="octicon octicon-link"></span></a>* <strong>Using Bus API</strong>
+</h2>
+
+<p>When you want direct access to Autobus basic API and are not worried about a strong contract.</p>
+
 <ul>
-<li><p><strong>Using Bus API</strong></p></li>
-<li><p>Define data:</p></li>
+<li>Define data (you could also use your own classes or even String, Integer...):</li>
 </ul>
 
-<div class="highlight highlight-java"><pre><span class="pl-k">public</span> <span class="pl-k">class</span> <span class="pl-en">BusDataSample</span> { <span class="pl-c">/* Additional fields if needed */</span> }</pre></div>
+<div class="highlight highlight-java"><pre><span class="pl-k">public</span> <span class="pl-k">class</span> <span class="pl-en">LocationChangedBusData</span> { <span class="pl-c">/* Additional fields if needed */</span> }</pre></div>
 
 <ul>
-<li>Prepare listeners:</li>
+<li>Prepare listeners expecting a concrete class of data:</li>
 </ul>
 
-<div class="highlight highlight-java"><pre><span class="pl-k">BusListener&lt;<span class="pl-smi">BusDataSample</span>&gt;</span> listener <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-k">BusListener&lt;&gt;</span>(<span class="pl-smi">BusDataSample</span><span class="pl-k">.</span>class);</pre></div>
+<div class="highlight highlight-java"><pre><span class="pl-k">private</span> <span class="pl-k">BusListener&lt;<span class="pl-smi">LocationChangedBusData</span>&gt;</span> locationChangedEventListener1 <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-k">BusListener&lt;<span class="pl-smi">LocationChangedBusData</span>&gt;</span>(<span class="pl-smi">LocationChangedBusData</span><span class="pl-k">.</span>class) {
+        <span class="pl-k">@Override</span>
+        <span class="pl-k">public</span> <span class="pl-k">void</span> <span class="pl-en">notifyEvent</span>(<span class="pl-k">@NotNull</span> <span class="pl-smi">LocationChangedBusData</span> <span class="pl-v">busData</span>) { <span class="pl-c">// Notice the strong typed not-null parameter</span>
+            onLocationChanged(busData);
+        }
+    };</pre></div>
+
+<ul>
+<li>... or any class of data at all (will be notified even if there is the data is null):</li>
+</ul>
+
+<div class="highlight highlight-java"><pre><span class="pl-k">private</span> <span class="pl-smi">BusListener</span> locationChangedEventListener2 <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">BusAnyDataListener</span>() {
+        <span class="pl-k">@Override</span>
+        <span class="pl-k">public</span> <span class="pl-k">void</span> <span class="pl-en">notifyEvent</span>(<span class="pl-k">@Nullable</span> <span class="pl-smi">Object</span> <span class="pl-v">busData</span>) { <span class="pl-c">// In this case there is no string typing, and the data could be null </span>
+            onLocationChanged();
+        }
+    };</pre></div>
 
 <ul>
 <li>Subscribe listener to a bus (should be injected) and a channel, expecting a concrete class:</li>
 </ul>
 
-<div class="highlight highlight-java"><pre>bus<span class="pl-k">.</span>subscribe(<span class="pl-s"><span class="pl-pds">"</span>TEST_CHANNEL<span class="pl-pds">"</span></span>, listener);</pre></div>
+<div class="highlight highlight-java"><pre>bus<span class="pl-k">.</span>subscribe(<span class="pl-s"><span class="pl-pds">"</span>TEST_CHANNEL<span class="pl-pds">"</span></span>, locationChangedEventListener1);
+bus<span class="pl-k">.</span>subscribe(<span class="pl-s"><span class="pl-pds">"</span>TEST_CHANNEL<span class="pl-pds">"</span></span>, locationChangedEventListener2);</pre></div>
 
 <ul>
-<li>Post events with data:</li>
+<li>Post events with data (both previously defined listeners will be notified):</li>
 </ul>
 
-<div class="highlight highlight-java"><pre>bus<span class="pl-k">.</span>emitEvent(<span class="pl-s"><span class="pl-pds">"</span>TEST_CHANNEL<span class="pl-pds">"</span></span>, <span class="pl-k">new</span> <span class="pl-smi">BusDataSample</span>());</pre></div>
+<div class="highlight highlight-java"><pre>bus<span class="pl-k">.</span>emitEvent(<span class="pl-s"><span class="pl-pds">"</span>TEST_CHANNEL<span class="pl-pds">"</span></span>, <span class="pl-k">new</span> <span class="pl-smi">LocationChangedBusData</span>());</pre></div>
 
 <ul>
-<li><p><strong>Using BusObservable API</strong></p></li>
-<li><p>Define data:</p></li>
+<li>... or post events without data (only locationChangedEventListener2 will be notified):</li>
 </ul>
 
-<div class="highlight highlight-java"><pre><span class="pl-k">public</span> <span class="pl-k">class</span> <span class="pl-en">BusDataSample</span> { <span class="pl-c">/* Additional fields if needed */</span> }</pre></div>
+<div class="highlight highlight-java"><pre>bus<span class="pl-k">.</span>emitEvent(<span class="pl-s"><span class="pl-pds">"</span>TEST_CHANNEL<span class="pl-pds">"</span></span>);</pre></div>
+
+<h2>
+<a id="-using-busobservable-api" class="anchor" href="#-using-busobservable-api" aria-hidden="true"><span class="octicon octicon-link"></span></a>* <strong>Using BusObservable API</strong>
+</h2>
+
+<p>When you prefer defining a strong contract between subscribers and emitters (leads to cleaner and safer code) use this approach.</p>
 
 <ul>
-<li>Define BusObservable passing a channel and a bus (should be injected) and specifying the class that will be emitted through it:</li>
+<li>Define data (you could also use your own classes or even String, Integer...):</li>
 </ul>
 
-<div class="highlight highlight-java"><pre><span class="pl-k">BusObservable&lt;<span class="pl-smi">BusDataSample</span>&gt;</span> busObservable <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-k">BusObservable&lt;&gt;</span>(<span class="pl-s"><span class="pl-pds">"</span>TEST_CHANNEL<span class="pl-pds">"</span></span>, bus);</pre></div>
+<div class="highlight highlight-java"><pre><span class="pl-k">public</span> <span class="pl-k">class</span> <span class="pl-en">LocationChangedBusData</span> { <span class="pl-c">/* Additional fields if needed */</span> }</pre></div>
 
 <ul>
-<li>Prepare listeners:</li>
+<li>Define BusObservable passing a channel and a bus (should be injected) and specifying the class that will be emitted through it. Only listeners expecting that class of data will be able to subscribe to this observable. And all the data emitted through this observable will be of the same class. Strong contract!</li>
 </ul>
 
-<div class="highlight highlight-java"><pre><span class="pl-k">BusListener&lt;<span class="pl-smi">BusDataSample</span>&gt;</span> listener <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-k">BusListener&lt;&gt;</span>(<span class="pl-smi">BusDataSample</span><span class="pl-k">.</span>class);</pre></div>
+<div class="highlight highlight-java"><pre><span class="pl-k">BusObservable&lt;<span class="pl-smi">LocationChangedBusData</span>&gt;</span> busObservable <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-k">BusObservable&lt;&gt;</span>(<span class="pl-s"><span class="pl-pds">"</span>TEST_CHANNEL<span class="pl-pds">"</span></span>, bus);</pre></div>
 
 <ul>
-<li>Subscribe listener to the BusObservable:</li>
+<li>... you could also define a BusObservable without specifying a concrete class of data:</li>
+</ul>
+
+<div class="highlight highlight-java"><pre><span class="pl-smi">BusObservable</span> busObservable <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">BusObservable</span>(<span class="pl-s"><span class="pl-pds">"</span>TEST_CHANNEL<span class="pl-pds">"</span></span>, bus);</pre></div>
+
+<ul>
+<li>Prepare listeners expecting a concrete class of data:</li>
+</ul>
+
+<div class="highlight highlight-java"><pre><span class="pl-k">private</span> <span class="pl-k">BusListener&lt;<span class="pl-smi">LocationChangedBusData</span>&gt;</span> locationChangedEventListener1 <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-k">BusListener&lt;<span class="pl-smi">LocationChangedBusData</span>&gt;</span>(<span class="pl-smi">LocationChangedBusData</span><span class="pl-k">.</span>class) {
+        <span class="pl-k">@Override</span>
+        <span class="pl-k">public</span> <span class="pl-k">void</span> <span class="pl-en">notifyEvent</span>(<span class="pl-k">@NotNull</span> <span class="pl-smi">LocationChangedBusData</span> <span class="pl-v">busData</span>) { <span class="pl-c">// Notice the strong typed not-null parameter</span>
+            onLocationChanged(busData);
+        }
+    };</pre></div>
+
+<ul>
+<li>Subscribe listener to the BusObservable. Only listeners expecting <em>LocationChangedBusData</em> will be able to subscribe to this BusObservable:</li>
 </ul>
 
 <div class="highlight highlight-java"><pre>busObservable<span class="pl-k">.</span>subscribe(listener);</pre></div>
 
 <ul>
-<li>Post events with data using BusObservable:</li>
+<li>Post events with data using BusObservable. Only data of class <em>LocationChangedBusData</em> can be emitted using this BusObservable:</li>
 </ul>
 
 <div class="highlight highlight-java"><pre>busObservable<span class="pl-k">.</span>emitEvent(<span class="pl-k">new</span> <span class="pl-smi">BusDataSample</span>());</pre></div>
 
 <h2>
-<a id="latest-version" class="anchor" href="#latest-version" aria-hidden="true"><span class="octicon octicon-link"></span></a>Latest version</h2>
+<a id="need-persistent-events-we-got-you-covered" class="anchor" href="#need-persistent-events-we-got-you-covered" aria-hidden="true"><span class="octicon octicon-link"></span></a>Need persistent events? We got you covered</h2>
 
-<p>We are working to make this lib available in a public Maven repository.
-For the moment you can find the latest stable JAR in the root of this GitHub repo as autobus-0.1.0.jar or
-you can build the JAR file yourself from the source code.</p>
+<ul>
+<li>You can just emit an event or you can emit <strong>persistent</strong> events. Persistent events are notified to new matching subscribers as soon as they subscribe to the channel.</li>
+</ul>
+
+<div class="highlight highlight-java"><pre>bus<span class="pl-k">.</span>emitPersistentEvent(<span class="pl-s"><span class="pl-pds">"</span>TEST_CHANNEL<span class="pl-pds">"</span></span>, <span class="pl-k">new</span> <span class="pl-smi">LocationChangedBusData</span>());</pre></div>
+
+<h2>
+<a id="need-to-execute-your-callback-in-the-main-thread-here-we-go" class="anchor" href="#need-to-execute-your-callback-in-the-main-thread-here-we-go" aria-hidden="true"><span class="octicon octicon-link"></span></a>Need to execute your callback in the <strong>main thread</strong>? Here we go...</h2>
+
+<ul>
+<li>You can define a Preprocessor for your listeners (both BusListener and BusAnyDataListener). This preprocessor will act as an interceptor that will receive every notification intended for the listener. You can build any kind of preprocessing of the data there or even force the listener's <em>notifyEvent</em> to be executed on the main thread:</li>
+</ul>
+
+<div class="highlight highlight-java"><pre><span class="pl-k">public</span> <span class="pl-k">class</span> <span class="pl-en">ForceMainThreadPreprocessor</span>&lt;T&gt; <span class="pl-k">implements</span> <span class="pl-e">BusListener</span>.<span class="pl-e">Preprocessor&lt;<span class="pl-smi">T</span>&gt;</span> {
+
+    <span class="pl-k">final</span> <span class="pl-smi">Handler</span> handler <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">Handler</span>(<span class="pl-smi">Looper</span><span class="pl-k">.</span>getMainLooper());
+
+    <span class="pl-k">@Override</span>
+    <span class="pl-k">public</span> <span class="pl-k">void</span> <span class="pl-en">notifyEvent</span>(<span class="pl-k">final</span> <span class="pl-k">@NotNull</span> <span class="pl-k">BusListener&lt;<span class="pl-smi">T</span>&gt;</span> <span class="pl-v">listener</span>, <span class="pl-k">final</span> <span class="pl-k">@NotNull</span> <span class="pl-smi">T</span> <span class="pl-v">busData</span>) {
+        <span class="pl-c">// Force listener's notifyEvent to be executed on the main thread.</span>
+        handler<span class="pl-k">.</span>post(<span class="pl-k">new</span> <span class="pl-smi">Runnable</span>() {
+            <span class="pl-k">@Override</span> <span class="pl-k">public</span> <span class="pl-k">void</span> <span class="pl-en">run</span>() {
+                listener<span class="pl-k">.</span>notifyEvent(busData);
+            }
+        });
+    }
+}</pre></div>
+
+<h2>
+<a id="full-documentation" class="anchor" href="#full-documentation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Full documentation</h2>
+
+<h2>
+<a id="class-bus" class="anchor" href="#class-bus" aria-hidden="true"><span class="octicon octicon-link"></span></a>Class Bus</h2>
+
+<p>Event bus. </p>
+
+<ul>
+<li><p>Supports different channels and events sent to each channel containing data of different classes or no data at all. BusListeners subscribed to a concrete channel and expecting a concrete class will be notified when a event containing a data object of that class is emitted to that channel.</p></li>
+<li><p>Supports persistent events that are notified to new matching subscribers as soon as they subscribe to the appropriate channel.</p></li>
+</ul>
+
+<h4>
+<a id="bus" class="anchor" href="#bus" aria-hidden="true"><span class="octicon octicon-link"></span></a><code>Bus()</code>
+</h4>
+
+<p>Creates a new Bus instance.</p>
+
+<h4>
+<a id="boolean-isloggingenabled" class="anchor" href="#boolean-isloggingenabled" aria-hidden="true"><span class="octicon octicon-link"></span></a><code>boolean isLoggingEnabled()</code>
+</h4>
+
+<p>Check whether logging is enabled for this bus. Enabled by default.</p>
+
+<ul>
+<li>
+<strong>Returns:</strong> true if logging is enabled for this bus.</li>
+</ul>
+
+<h4>
+<a id="void-setloggingenabledboolean-loggingenabled" class="anchor" href="#void-setloggingenabledboolean-loggingenabled" aria-hidden="true"><span class="octicon octicon-link"></span></a><code>void setLoggingEnabled(boolean loggingEnabled)</code>
+</h4>
+
+<p>Sets whether logging should be enabled for this bus. Enabled by default.</p>
+
+<ul>
+<li>
+<strong>Parameters:</strong> <code>loggingEnabled</code> — </li>
+</ul>
+
+<h4>
+<a id="void-subscribenotnull-string-channel-notnull-buslistener-listener" class="anchor" href="#void-subscribenotnull-string-channel-notnull-buslistener-listener" aria-hidden="true"><span class="octicon octicon-link"></span></a><code>void subscribe(@NotNull String channel, @NotNull BusListener listener)</code>
+</h4>
+
+<p>Subscribe a BusListener to a concrete channel. </p>
+
+<ul>
+<li>
+<strong>Parameters:</strong>
+
+<ul>
+<li>
+<code>channel</code> — String representing the channel the BusListener is being subscribed to.</li>
+<li>
+<code>listener</code> — BusListener to notify when an event containing data of the class expected by the listener is emitted on the channel.</li>
+</ul>
+</li>
+<li>
+<strong>Exceptions:</strong> <code>IllegalArgumentException</code> — if the listener is already subscribed to the channel or channel is null.</li>
+</ul>
+
+<h4>
+<a id="void-unsubscribenotnull-string-channel-notnull-buslistener-listener" class="anchor" href="#void-unsubscribenotnull-string-channel-notnull-buslistener-listener" aria-hidden="true"><span class="octicon octicon-link"></span></a><code>void unSubscribe(@NotNull String channel, @NotNull BusListener listener)</code>
+</h4>
+
+<p>Unsubscribe a BusListener from a concrete channel.</p>
+
+<ul>
+<li>
+<strong>Parameters:</strong>
+
+<ul>
+<li>
+<code>channel</code> — String representing the channel from which the listener is being unsubscribed.</li>
+<li>
+<code>listener</code> — BusListener being unsubscribed from the channel.</li>
+</ul>
+</li>
+<li>
+<strong>Exceptions:</strong> <code>IllegalArgumentException</code> — if the listener is not subscribed to the channel or channel is null.</li>
+</ul>
+
+<h4>
+<a id="void-emitpersistenteventnotnull-string-channel" class="anchor" href="#void-emitpersistenteventnotnull-string-channel" aria-hidden="true"><span class="octicon octicon-link"></span></a><code>void emitPersistentEvent(@NotNull String channel)</code>
+</h4>
+
+<p>Emit persistent event without data. Persistent events are notified to new matching subscribers as soon as they subscribe to the channel. Only BusListeners subscribed to the channel and expecting the data class will be notified.</p>
+
+<ul>
+<li>
+<strong>Parameters:</strong> <code>channel</code> — String representing the channel the event will be emitted to.</li>
+<li>
+<strong>Exceptions:</strong> <code>IllegalArgumentException</code> — if channel is null.</li>
+</ul>
+
+<h4>
+<a id="void-emitpersistenteventnotnull-string-channel-nullable-object-busdata" class="anchor" href="#void-emitpersistenteventnotnull-string-channel-nullable-object-busdata" aria-hidden="true"><span class="octicon octicon-link"></span></a><code>void emitPersistentEvent(@NotNull String channel, @Nullable Object busData)</code>
+</h4>
+
+<p>Emit persistent event containing data. Persistent events are notified to new matching subscribers as soon as they subscribe to the channel. Only BusListeners subscribed to the channel and expecting the data class will be notified.</p>
+
+<ul>
+<li>
+<strong>Parameters:</strong>
+
+<ul>
+<li>
+<code>channel</code> — String representing the channel the event will be emitted to.</li>
+<li>
+<code>busData</code> — data sent to the channel.</li>
+</ul>
+</li>
+<li>
+<strong>Exceptions:</strong> <code>IllegalArgumentException</code> — if channel is null.</li>
+</ul>
+
+<h4>
+<a id="void-emiteventnotnull-string-channel" class="anchor" href="#void-emiteventnotnull-string-channel" aria-hidden="true"><span class="octicon octicon-link"></span></a><code>void emitEvent(@NotNull String channel)</code>
+</h4>
+
+<p>Emit event without data. Only BusListeners subscribed to the channel and expecting the data class will be notified.</p>
+
+<ul>
+<li>
+<strong>Parameters:</strong> <code>channel</code> — String representing the channel the event will be emitted to.</li>
+<li>
+<strong>Exceptions:</strong> <code>IllegalArgumentException</code> — if channel is null.</li>
+</ul>
+
+<h4>
+<a id="void-emiteventnotnull-string-channel-nullable-object-busdata" class="anchor" href="#void-emiteventnotnull-string-channel-nullable-object-busdata" aria-hidden="true"><span class="octicon octicon-link"></span></a><code>void emitEvent(@NotNull String channel, @Nullable Object busData)</code>
+</h4>
+
+<p>Emit event containing data. Only BusListeners subscribed to the channel and expecting the data class will be notified.</p>
+
+<ul>
+<li>
+<strong>Parameters:</strong>
+
+<ul>
+<li>
+<code>channel</code> — String representing the channel the event will be emitted to.</li>
+<li>
+<code>busData</code> — data sent to the channel.</li>
+</ul>
+</li>
+<li>
+<strong>Exceptions:</strong> <code>IllegalArgumentException</code> — if channel is null.</li>
+</ul>
+
+<h2>
+<a id="class-busobservable" class="anchor" href="#class-busobservable" aria-hidden="true"><span class="octicon octicon-link"></span></a>Class BusObservable</h2>
+
+<p>Represents an observable object defined by a Bus and a concrete channel. It enables an easy and well defined way of subscribing to and emitting events containing a concrete class of data.</p>
+
+<h4>
+<a id="busobservablenotnull-string-channel-notnull-bus-bus" class="anchor" href="#busobservablenotnull-string-channel-notnull-bus-bus" aria-hidden="true"><span class="octicon octicon-link"></span></a><code>BusObservable(@NotNull String channel, @NotNull Bus bus)</code>
+</h4>
+
+<p>Creates a new BusObservable with the given channel and Bus. </p>
+
+<ul>
+<li>
+<strong>Parameters:</strong>
+
+<ul>
+<li>
+<code>channel</code> — String representing the channel the event will be emitted to and the subscribers will be subscribed to.</li>
+<li>
+<code>bus</code> — Bus where the emission and subscription will take place.</li>
+</ul>
+</li>
+<li>
+<strong>Exceptions:</strong> <code>IllegalArgumentException</code> — if the channel or the bus are null.</li>
+</ul>
+
+<h4>
+<a id="void-subscribenotnull-buslistenert-listener" class="anchor" href="#void-subscribenotnull-buslistenert-listener" aria-hidden="true"><span class="octicon octicon-link"></span></a><code>void subscribe(@NotNull BusListener&lt;T&gt; listener)</code>
+</h4>
+
+<p>Subscribe a BusListener to the channel. </p>
+
+<ul>
+<li>
+<strong>Parameters:</strong> <code>listener</code> — BusListener to notify when an event containing data of the class expected by the listener is emitted on the channel.</li>
+<li>
+<strong>Exceptions:</strong> <code>IllegalArgumentException</code> — if the listener is null or if is already subscribed to the channel.</li>
+</ul>
+
+<h4>
+<a id="void-unsubscribenotnull-buslistenert-listener" class="anchor" href="#void-unsubscribenotnull-buslistenert-listener" aria-hidden="true"><span class="octicon octicon-link"></span></a><code>void unSubscribe(@NotNull BusListener&lt;T&gt; listener)</code>
+</h4>
+
+<p>Unsubscribe a BusListener from the channel.</p>
+
+<ul>
+<li>
+<strong>Parameters:</strong> <code>listener</code> — BusListener being unsubscribed from the channel.</li>
+<li>
+<strong>Exceptions:</strong> <code>IllegalArgumentException</code> — if the listener is null or if is not subscribed to the channel.</li>
+</ul>
+
+<h4>
+<a id="void-emitevent" class="anchor" href="#void-emitevent" aria-hidden="true"><span class="octicon octicon-link"></span></a><code>void emitEvent()</code>
+</h4>
+
+<p>Emit event to the channel without data. Only BusListeners subscribed to the channel and expecting the data class will be notified.</p>
+
+<h4>
+<a id="void-emiteventnullable-t-busdata" class="anchor" href="#void-emiteventnullable-t-busdata" aria-hidden="true"><span class="octicon octicon-link"></span></a><code>void emitEvent(@Nullable T busData)</code>
+</h4>
+
+<p>Emit event to the channel containing data. Only BusListeners subscribed to the channel and expecting the data class will be notified.</p>
+
+<ul>
+<li>
+<strong>Parameters:</strong> <code>busData</code> — data sent to the channel.</li>
+</ul>
+
+<h4>
+<a id="void-emitpersistentevent" class="anchor" href="#void-emitpersistentevent" aria-hidden="true"><span class="octicon octicon-link"></span></a><code>void emitPersistentEvent()</code>
+</h4>
+
+<p>Emit persistent event to the channel without data. Persistent events are notified to new matching subscribers as soon as they subscribe to the channel. Only BusListeners subscribed to the channel and expecting the data class will be notified.</p>
+
+<h4>
+<a id="void-emitpersistenteventnullable-t-busdata" class="anchor" href="#void-emitpersistenteventnullable-t-busdata" aria-hidden="true"><span class="octicon octicon-link"></span></a><code>void emitPersistentEvent(@Nullable T busData)</code>
+</h4>
+
+<p>Emit persistent event to the channel containing data. Persistent events are notified to new matching subscribers as soon as they subscribe to the channel. Only BusListeners subscribed to the channel and expecting the data class will be notified.</p>
+
+<ul>
+<li>
+<strong>Parameters:</strong> <code>busData</code> — data sent to the channel.</li>
+</ul>
+
+<h2>
+<a id="class-buslistener" class="anchor" href="#class-buslistener" aria-hidden="true"><span class="octicon octicon-link"></span></a>Class BusListener</h2>
+
+<p>Represents a listener that can be subscribed to a Bus channel expecting a concrete class of object.</p>
+
+<h4>
+<a id="public-buslistenernotnull-classt-expecteddataclass" class="anchor" href="#public-buslistenernotnull-classt-expecteddataclass" aria-hidden="true"><span class="octicon octicon-link"></span></a><code>public BusListener(@NotNull Class&lt;T&gt; expectedDataClass)</code>
+</h4>
+
+<p>Creates a BusListener that expects a concrete class. </p>
+
+<ul>
+<li>
+<strong>Parameters:</strong> <code>expectedDataClass</code> — Class of the expected data. Only events containing objects of this class will be notified to this listener. If you want to be notified with any class of data sent to a Bus channel should use BusAnyDataListener.</li>
+</ul>
+
+<h4>
+<a id="public-buslistenernotnull-classt-expecteddataclass-nullable-preprocessort-preprocessor" class="anchor" href="#public-buslistenernotnull-classt-expecteddataclass-nullable-preprocessort-preprocessor" aria-hidden="true"><span class="octicon octicon-link"></span></a><code>public BusListener(@NotNull Class&lt;T&gt; expectedDataClass, @Nullable Preprocessor&lt;T&gt; preprocessor)</code>
+</h4>
+
+<p>Creates a BusListener that expects a concrete class and a Preprocessor. </p>
+
+<ul>
+<li>
+<strong>Parameters:</strong>
+
+<ul>
+<li>
+<code>expectedDataClass</code> — Class of the expected data. Only events containing objects of this class will be notified to this listener. If you want to be notified with any class of data sent to a Bus channel should use BusAnyDataListener. Useful, for example, when you need to execute listeners on the main thread.</li>
+<li>
+<code>preprocessor</code> — Set a preprocessor to intercept every event notification.</li>
+</ul>
+</li>
+</ul>
+
+<h4>
+<a id="public-boolean-haspreprocessor" class="anchor" href="#public-boolean-haspreprocessor" aria-hidden="true"><span class="octicon octicon-link"></span></a><code>public boolean hasPreprocessor()</code>
+</h4>
+
+<ul>
+<li>
+<strong>Returns:</strong> true if Preprocessor is set, false otherwise.</li>
+</ul>
+
+<h4>
+<a id="public-abstract-void-notifyeventnotnull-t-busdata" class="anchor" href="#public-abstract-void-notifyeventnotnull-t-busdata" aria-hidden="true"><span class="octicon octicon-link"></span></a><code>public abstract void notifyEvent(@NotNull T busData)</code>
+</h4>
+
+<p>Callback executed when an event with the expected data class is emitted to the bus channel this listener is subscribed to.</p>
+
+<ul>
+<li>
+<strong>Parameters:</strong> <code>busData</code> — data object.</li>
+</ul>
+
+<h2>
+<a id="interface-buslistenerpreprocessor" class="anchor" href="#interface-buslistenerpreprocessor" aria-hidden="true"><span class="octicon octicon-link"></span></a>interface BusListener.Preprocessor</h2>
+
+<h4>
+<a id="public-interface-preprocessort" class="anchor" href="#public-interface-preprocessort" aria-hidden="true"><span class="octicon octicon-link"></span></a><code>public interface Preprocessor&lt;T&gt;</code>
+</h4>
+
+<p>Preprocessor to intercept every event notification. Useful, for example, when you need to execute listeners on the main thread.</p>
+
+<h2>
+<a id="class-busanydatalistener" class="anchor" href="#class-busanydatalistener" aria-hidden="true"><span class="octicon octicon-link"></span></a>class BusAnyDataListener</h2>
+
+<p>Represents a listener that can be subscribed to a Bus channel expecting any kind of object (null included).</p>
+
+<h4>
+<a id="public-busanydatalistener" class="anchor" href="#public-busanydatalistener" aria-hidden="true"><span class="octicon octicon-link"></span></a><code>public BusAnyDataListener()</code>
+</h4>
+
+<p>Creates a BusListener that expects data of any kind of class (even null)</p>
+
+<h4>
+<a id="public-busanydatalistenernullable-preprocessor-preprocessor" class="anchor" href="#public-busanydatalistenernullable-preprocessor-preprocessor" aria-hidden="true"><span class="octicon octicon-link"></span></a><code>public BusAnyDataListener(@Nullable Preprocessor preprocessor)</code>
+</h4>
+
+<p>Creates a BusListener that expects data of any kind of class (even null) with a Preprocessor. </p>
+
+<ul>
+<li>
+<strong>Parameters:</strong> <code>preprocessor</code> — Set a preprocessor to intercept every event notification. Useful, for example, when you need to execute listeners on the main thread.</li>
+</ul>
+
+<h4>
+<a id="public-abstract-void-notifyeventnullable-object-busdata" class="anchor" href="#public-abstract-void-notifyeventnullable-object-busdata" aria-hidden="true"><span class="octicon octicon-link"></span></a><code>public abstract void notifyEvent(@Nullable Object busData)</code>
+</h4>
+
+<p>Callback executed when an event with any kind of data (even null) is emitted to the bus channel this listener is subscribed to.</p>
+
+<ul>
+<li>
+<strong>Parameters:</strong> <code>busData</code> — data object or null if no data was emitted.</li>
+</ul>
+
+<h2>
+<a id="class-busanydatalistenerpreprocessor" class="anchor" href="#class-busanydatalistenerpreprocessor" aria-hidden="true"><span class="octicon octicon-link"></span></a>Class BusAnyDataListener.Preprocessor`</h2>
+
+<p>Preprocessor to intercept every event notification. Useful, for example, when you need to execute listeners on the main thread.</p>
 
 <h2>
 <a id="license" class="anchor" href="#license" aria-hidden="true"><span class="octicon octicon-link"></span></a>License</h2>
