@@ -1,6 +1,8 @@
  __Autobus__ <br/>An event bus by __bq__
 ======================================
 
+![alt text](https://raw.githubusercontent.com/bq/autobus/master/autobus_logo.png "Autobus logo")
+
 What?
 ------------------------------
 An enhanced event bus intended to allow communication between decoupled parts of an application.
