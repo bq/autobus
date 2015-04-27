@@ -1,5 +1,6 @@
 apply plugin: 'java'
 apply plugin: 'maven'
+apply plugin: 'signing'
 
 def currentVersion = "0.1.0"
 
@@ -11,4 +12,98 @@ dependencies {
 
 task generateJavadocs(type: Javadoc) {
     source = sourceSets.main.allJava
+}
+
+// Maven Central related tasks and configuration
+
+// Artifacts
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
+// Signing Artifacts
+signing {
+    sign configurations.archives
+}
+
+// Upload files
+uploadArchives {
+
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            // Group
+            pom.groupId = "com.bq"
+
+            // Version
+            // Get NEXUS_BUILD_TYPE set by Jenkins: SNAPSHOT or RELEASE.
+            def nexusBuildType = "$System.env.NEXUS_BUILD_TYPE"
+            def versionSuffix = ""
+            if (nexusBuildType == "SNAPSHOT") {
+                versionSuffix = "-SNAPSHOT"
+            }
+            pom.version = currentVersion + versionSuffix
+
+            // Id
+            pom.artifactId = "autobus"
+
+            // Metadata
+            pom.project {
+                name 'Autobus'
+                packaging 'jar'
+                description 'An enhanced event bus for Android projects.'
+                url 'http://opensource.bq.com/autobus/'
+
+                scm {
+                    url 'https://github.com/bq/autobus'
+                    connection 'scm:git@github.com:bq/autobus.git'
+                    developerConnection 'scm:git@github.com:bq/autobus.git'
+                }
+
+                licenses {
+                    license {
+                        name 'The Apache License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'imartinez'
+                        name 'Iván Martínez'
+                        email 'ivan.martinez@bq.com'
+                    }
+                }
+
+                issueManagement {
+                    system 'GitHub Issues'
+                    url 'https://github.com/bq/autobus/issues'
+                }
+
+                organization {
+                    name 'bq'
+                    url 'http://bq.com'
+                }
+            }
+        }
+    }
 }
