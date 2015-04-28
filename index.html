@@ -46,7 +46,7 @@ listening to channel C and expecting data of any class are notified.</p>
 <li><strong>Explicit contract between subscribers and emitters</strong></li>
 </ul>
 
-<p>As one of the common use case of Event Buses is the communication between <em>interactors</em> (asynchronous core operations of an app) and <em>presenters</em> (adapters between <em>views</em> and <em>interactors</em>) it is desirable to maintain an explicit definition or contract between the emitters and the subscribers. Autobus accomplishes this task with BusObservable API. A <em>interactor</em> can return a BusObservable instance and subscribers can directly be subscribed to this observable; the observable is the contract itself as it defines the <em>Bus</em>, the <em>Channel</em> and also the data that will be emitted. </p>
+<p>As one of the common use case of event buses is the communication between <em>interactors</em> (asynchronous core operations of an app) and <em>presenters</em> (adapters between <em>views</em> and <em>interactors</em>) it is desirable to maintain an explicit definition or contract between the emitters and the subscribers. Autobus accomplishes this task with BusObservable API. An <em>interactor</em> can return a BusObservable instance and subscribers can directly be subscribed to this observable; the observable is the contract itself as it defines the <em>Bus</em>, the <em>Channel</em> and also the type of data that will be emitted. </p>
 
 <h2>
 <a id="ok-what-else" class="anchor" href="#ok-what-else" aria-hidden="true"><span class="octicon octicon-link"></span></a>Ok, what else?</h2>
@@ -54,7 +54,7 @@ listening to channel C and expecting data of any class are notified.</p>
 <ul>
 <li>Full annotated with <a href="https://github.com/Nullable" class="user-mention">@Nullable</a> and <a href="https://github.com/NotNull" class="user-mention">@NotNull</a>.</li>
 <li>Clean code enforcement by strong typing. No need for upcasting/downcasting any object.</li>
-<li>Autocomplete heaven (related to this string typing).</li>
+<li>Autocomplete heaven (related to this strong typing).</li>
 </ul>
 
 <h2>
