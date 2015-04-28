@@ -33,7 +33,12 @@ artifacts {
 
 // Signing Artifacts
 signing {
-    sign configurations.archives
+    if(project.hasProperty('signing.keyId') && project.hasProperty('signing.password') &&
+            project.hasProperty('signing.secretKeyRingFile')) {
+        sign configurations.archives
+    } else {
+        println "Signing information missing/incomplete."
+    }
 }
 
 // Upload files
@@ -43,12 +48,16 @@ uploadArchives {
         mavenDeployer {
             beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 
-            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                authentication(userName: ossrhUsername, password: ossrhPassword)
-            }
+            if (project.hasProperty('ossrhUsername') && project.hasProperty('ossrhPassword')) {
+                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                    authentication(userName: ossrhUsername, password: ossrhPassword)
+                }
 
-            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-                authentication(userName: ossrhUsername, password: ossrhPassword)
+                snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                    authentication(userName: ossrhUsername, password: ossrhPassword)
+                }
+            } else {
+                println "Settings ossrhUsername/ossrhPassword missing/incomplete."
             }
 
             // Group
