@@ -1,4 +1,4 @@
- __Autobus__ <br/>An event bus by __bq__
+ __Autobus__ <br/>An event bus by __BQ__
 ======================================
 
 ![alt text](https://raw.githubusercontent.com/bq/autobus/master/autobus_logo.png "Autobus logo")
@@ -78,7 +78,7 @@ License
 -------
 This project is licensed under the Apache Software License, Version 2.0.
 
-    Copyright (c) 2015 bq
+    Copyright (c) 2015 BQ
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
